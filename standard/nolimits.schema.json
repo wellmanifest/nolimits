@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wellmanifest.org/schemas/nolimits/v1.json",
+  "title": "WellmanifestNoLimitsReport",
+  "type": "object",
+  "required": [
+    "schema",
+    "host",
+    "timestamp",
+    "limitCode",
+    "status",
+    "remediation"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "wellmanifest.nolimits/report/v1"
+    },
+    "host": {
+      "type": "string",
+      "description": "Identifier of the host or machine experiencing the limit."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "limitCode": {
+      "type": "string",
+      "pattern": "^LIM-[A-Z]+-[0-9]{3}$",
+      "description": "Canonical limit code, e.g. LIM-STORAGE-001, LIM-TEST-002."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "detected",
+        "remediating",
+        "remediated",
+        "failed_closed"
+      ]
+    },
+    "observedMetrics": {
+      "type": "object",
+      "description": "Quantitative measurements triggering the limit, e.g. available_gb, suite_duration_s."
+    },
+    "remediation": {
+      "type": "object",
+      "required": [
+        "tool",
+        "command",
+        "outcome"
+      ],
+      "properties": {
+        "tool": {
+          "type": "string"
+        },
+        "command": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "recoveredCapacity": {
+          "type": "string"
+        }
+      }
+    },
+    "planfileContinuation": {
+      "type": "object",
+      "properties": {
+        "sprint": {
+          "type": "string"
+        },
+        "ticket": {
+          "type": "string"
+        },
+        "resumed": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

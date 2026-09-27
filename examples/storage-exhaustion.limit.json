@@ -1,0 +1,24 @@
+{
+  "$schema": "https://wellmanifest.org/schemas/nolimits/v1.json",
+  "schema": "wellmanifest.nolimits/report/v1",
+  "host": "local-dev-host",
+  "timestamp": "2026-09-27T11:42:00Z",
+  "limitCode": "LIM-STORAGE-001",
+  "status": "remediated",
+  "observedMetrics": {
+    "available_gb": 4.8,
+    "filesystem": "/dev/nvme0n1p2",
+    "mount": "/"
+  },
+  "remediation": {
+    "tool": "semcod/fixos",
+    "command": "fixos cleanup --threshold-gb 10 && fixos quick",
+    "outcome": "Pruned 24 GB of stale JetBrains caches and old container logs; freed 24.2 GB",
+    "recoveredCapacity": "29.0 GB available"
+  },
+  "planfileContinuation": {
+    "sprint": "current",
+    "ticket": "ticket-286",
+    "resumed": true
+  }
+}

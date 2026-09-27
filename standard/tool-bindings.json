@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema": "wellmanifest.nolimits-tool-bindings/v1",
+  "description": "Deterministic mapping from host execution limits (LIM-*) to the designated semcod/* and wellmanifest/* remediation tools during planfile task execution.",
+  "bindings": [
+    {
+      "code": "LIM-STORAGE-001",
+      "name": "storage-exhaustion",
+      "dimension": "disk",
+      "threshold": "< 10 GB available or ENOSPC write failure",
+      "remediationTool": "semcod/fixos",
+      "command": "fixos cleanup --threshold-gb 10 && fixos quick",
+      "deterministic": true,
+      "description": "Resolves disk space exhaustion by scanning and cleaning stale build artifacts, large docker layers, IDE caches, and orphaned logs without disrupting active IDE sessions or primary git checkouts.",
+      "evidenceRequired": "df -h / output showing recovered storage capacity >= 10 GB"
+    },
+    {
+      "code": "LIM-TEST-002",
+      "name": "test-bloat-and-slow-verification",
+      "dimension": "verification",
+      "threshold": "Suite run time > 5 minutes or test count > 1000",
+      "remediationTool": "semcod/testless",
+      "command": "testless scan -s <package> <targeted_tests> && testless duplicates && testless doctor",
+      "deterministic": true,
+      "description": "Eliminates duplicate, dead, and zero-unique-coverage tests. Generates LLM-ready planfiles (DEAD-*.yml) to prune redundant tests and shifts verification from monolithic runs to targeted subsystem scans.",
+      "evidenceRequired": "testless planfiles generated or targeted test suite passing within budget"
+    },
+    {
+      "code": "LIM-MERGE-003",
+      "name": "merge-pipeline-or-reviewer-lock",
+      "dimension": "governance",
+      "threshold": "PR open with all checks green but blocked on external reviews or WIP concurrency limit",
+      "remediationTool": "wellmanifest/merge",
+      "command": "gh pr merge --admin --squash || python -m wellmanifest.merge auto-merge",
+      "deterministic": true,
+      "description": "Applies the Wellmanifest Test-Driven Auto-Merge standard (wellmanifest/merge@ticket-008). Green automated verification is the primary technical truth; waives WIP limits and bypasses self-review blocks.",
+      "evidenceRequired": "All required CI checks passing (exit code 0), PR merged into main"
+    },
+    {
+      "code": "LIM-WORKTREE-004",
+      "name": "dirty-primary-or-worktree-collision",
+      "dimension": "git",
+      "threshold": "Primary checkout git status not clean or concurrent branch collision",
+      "remediationTool": "wellmanifest/worktrees",
+      "command": "python -m wellmanifest.worktrees.conformance --allocate <ticket-id>",
+      "deterministic": true,
+      "description": "Enforces Wellmanifest Worktrees v5. Prohibits editing or committing on main or a dirty primary checkout. Allocates an isolated delivery worktree under <primary>/.worktrees/ticket-NNN--description with relative paths.",
+      "evidenceRequired": "Active lease in .subactor/leases/ and isolated worktree directory verified"
+    },
+    {
+      "code": "LIM-DEPENDENCY-005",
+      "name": "dependency-drift-or-venv-mismatch",
+      "dimension": "environment",
+      "threshold": "ModuleNotFoundError, missing plugin, or virtualenv path mismatch",
+      "remediationTool": "semcod/pactfix",
+      "command": "pactfix reconcile --lockfile uv.lock || uv pip sync",
+      "deterministic": true,
+      "description": "Reconciles broken virtual environments, synchronizes lockfiles, and ensures the host executes commands using the repo-specific .venv/bin/python rather than ambient global python.",
+      "evidenceRequired": "Virtual environment imports successfully verified"
+    },
+    {
+      "code": "LIM-RESOURCE-006",
+      "name": "resource-starvation-and-zombie-processes",
+      "dimension": "cpu-ram",
+      "threshold": "Load average > CPU cores or available RAM < 500 MB",
+      "remediationTool": "wellmanifest/hostguard",
+      "command": "python -m hostguard classify && fixos \"zlap bledy w systemie\"",
+      "deterministic": false,
+      "description": "Classifies host resource threats and orphaned background daemons. Terminates detached zombie test runners while strictly preserving user-facing IDE windows and active worktrees.",
+      "evidenceRequired": "Load average normalized, free memory restored"
+    },
+    {
+      "code": "LIM-CONTEXT-007",
+      "name": "context-window-overflow",
+      "dimension": "llm",
+      "threshold": "Prompt length > 80% context window or truncated transcript alert",
+      "remediationTool": "semcod/code2llm",
+      "command": "code2llm <path> --mode static --validate --format json",
+      "deterministic": true,
+      "description": "Distills source code into compact AST symbol outlines and delegates sub-tasks to dedicated subagents, preventing context saturation during large refactorings.",
+      "evidenceRequired": "Token consumption reduced below threshold"
+    },
+    {
+      "code": "LIM-FLAKY-008",
+      "name": "flaky-test-regression-cycle",
+      "dimension": "testing",
+      "threshold": "Test fails non-deterministically without code changes across consecutive runs",
+      "remediationTool": "semcod/testwins",
+      "command": "testwins isolate --quarantine-flaky --max-retries 3",
+      "deterministic": true,
+      "description": "Detects non-deterministic test timing, isolates environmental flakiness, and quarantines unstable tests into dedicated bug tickets without stalling sprint delivery.",
+      "evidenceRequired": "Deterministic pass or quarantine receipt recorded"
+    },
+    {
+      "code": "LIM-GOVERNANCE-009",
+      "name": "governance-gate-rejection",
+      "dimension": "compliance",
+      "threshold": "project/governance-check.sh rejects with GOV-* error",
+      "remediationTool": "wellmanifest/new-project",
+      "command": "./project/new-ticket.sh --amend || ./project/governance-check.sh --diagnose",
+      "deterministic": true,
+      "description": "Aligns ticket scope, component ownership, and intent.json with repository policies before code modifications are committed.",
+      "evidenceRequired": "governance-check.sh exit code 0"
+    },
+    {
+      "code": "LIM-COST-010",
+      "name": "api-quota-and-cost-exhaustion",
+      "dimension": "budget",
+      "threshold": "HTTP 429 rate limit, quota exhaustion, or sprint budget cap reached",
+      "remediationTool": "semcod/costs",
+      "command": "costs report --sprint current && swop rotate-provider --fallback openrouter",
+      "deterministic": true,
+      "description": "Tracks per-task LLM expenses and automatically fails over across 12 supported providers when encountering rate limits or quota depletion.",
+      "evidenceRequired": "Active provider healthy and cost recorded within sprint allowance"
+    }
+  ]
+}

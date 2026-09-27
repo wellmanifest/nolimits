@@ -1,0 +1,23 @@
+{
+  "$schema": "https://wellmanifest.org/schemas/nolimits/v1.json",
+  "schema": "wellmanifest.nolimits/report/v1",
+  "host": "local-dev-host",
+  "timestamp": "2026-09-27T11:42:00Z",
+  "limitCode": "LIM-TEST-002",
+  "status": "remediated",
+  "observedMetrics": {
+    "total_tests": 4869,
+    "full_suite_duration_s": 1420
+  },
+  "remediation": {
+    "tool": "semcod/testless",
+    "command": "testless scan -s koru.queue tests/test_queue*.py && testless planfiles --out .planfiles",
+    "outcome": "Scoped verification to affected subsystem (duration 18s); emitted 14 DEAD test cleanup tickets",
+    "recoveredCapacity": "Verification cycle reduced from 23.6 min to 18 seconds"
+  },
+  "planfileContinuation": {
+    "sprint": "current",
+    "ticket": "ticket-286",
+    "resumed": true
+  }
+}
