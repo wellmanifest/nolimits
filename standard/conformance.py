@@ -88,9 +88,13 @@ def evaluate_remediation_action(
 
     if limit_code == "LIM-MERGE-003":
         checks_green = facts.get("all_tests_green", False)
-        if not checks_green:
-            return False, "Cannot auto-merge without green test verification"
-        return True, "Merge unblocked via wellmanifest/merge@ticket-008"
+        admin_bypass = facts.get("admin_bypass_used", False)
+        validator_approved = facts.get("validator_approved", False)
+        if admin_bypass:
+            return False, "Admin bypass and self-review evasion are strictly forbidden"
+        if not (checks_green and validator_approved):
+            return False, "Cannot merge without green test verification and independent Validator approval"
+        return True, "Merge unblocked via subactor/validator-agent"
 
     if limit_code == "LIM-WORKTREE-004":
         lease_allocated = facts.get("lease_allocated", False)
@@ -165,16 +169,25 @@ def run_conformance_checks() -> int:
     assert ok, f"Scenario 3 failed: {msg}"
     print(f"[OK] Scenario 3 (Test bloat): {msg}")
 
-    # Scenario 4: Merge unblocked by wellmanifest/merge
+    # Scenario 4: Merge unblocked by subactor/validator-agent without admin bypass
     ok, msg = evaluate_remediation_action(
         "LIM-MERGE-003",
         bindings,
-        {"tool": "wellmanifest/merge", "all_tests_green": True},
+        {"tool": "subactor/validator-agent", "all_tests_green": True, "validator_approved": True, "admin_bypass_used": False},
     )
     assert ok, f"Scenario 4 failed: {msg}"
-    print(f"[OK] Scenario 4 (Auto-merge): {msg}")
+    print(f"[OK] Scenario 4 (Validator merge): {msg}")
 
-    print("\nAll Wellmanifest NoLimits conformance checks passed (10/10 green).")
+    # Scenario 4b: Admin bypass must be rejected
+    ok, msg = evaluate_remediation_action(
+        "LIM-MERGE-003",
+        bindings,
+        {"tool": "subactor/validator-agent", "all_tests_green": True, "validator_approved": True, "admin_bypass_used": True},
+    )
+    assert not ok, "Scenario 4b should have rejected admin bypass"
+    print(f"[OK] Scenario 4b (Admin bypass rejected): {msg}")
+
+    print("\nAll Wellmanifest NoLimits conformance checks passed (11/11 green).")
     return 0
 
 

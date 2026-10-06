@@ -29,12 +29,12 @@
       "code": "LIM-MERGE-003",
       "name": "merge-pipeline-or-reviewer-lock",
       "dimension": "governance",
-      "threshold": "PR open with all checks green but blocked on external reviews or WIP concurrency limit",
-      "remediationTool": "wellmanifest/merge",
-      "command": "gh pr merge --admin --squash || python -m wellmanifest.merge auto-merge",
+      "threshold": "PR open blocked on missing independent review or protected validator admission",
+      "remediationTool": "subactor/validator-agent",
+      "command": "/home/tom/github/subactor/validator-agent/bin/run-local-direct-pr.sh --repository <repo> --pull-request <pr> --ticket <ticket> --target-root <path> --merge --key-file ~/.local/share/subactor/credential-vault/ifuri-validator-agent.pem",
       "deterministic": true,
-      "description": "Applies the Wellmanifest Test-Driven Auto-Merge standard (wellmanifest/merge@ticket-008). Green automated verification is the primary technical truth; waives WIP limits and bypasses self-review blocks.",
-      "evidenceRequired": "All required CI checks passing (exit code 0), PR merged into main"
+      "description": "Applies the Wellmanifest Protected Direct-PR Validator standard (wellmanifest/merge@ticket-012/013). Enforces independent Validator App review and merge attestation without admin bypass or self-review impersonation.",
+      "evidenceRequired": "Independent Validator App approval (ifuri-validator-agent[bot]) and terminal merge receipt verified"
     },
     {
       "code": "LIM-WORKTREE-004",
